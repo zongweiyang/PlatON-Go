@@ -21,7 +21,9 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
-
+	"os"
+	"strconv"
+	
 	"github.com/PlatONnetwork/PlatON-Go"
 	"github.com/PlatONnetwork/PlatON-Go/accounts/abi"
 	"github.com/PlatONnetwork/PlatON-Go/common"
@@ -234,7 +236,11 @@ func (c *BoundContract) transact(opts *TransactOpts, contract *common.Address, i
 	if opts.Signer == nil {
 		return nil, errors.New("no signer to authorize the transaction with")
 	}
-	signedTx, err := opts.Signer(types.NewEIP155Signer(new(big.Int)), opts.From, rawTx)
+	chainId, err := strconv.ParseInt(os.Getenv("CHAIN_ID"), 10, 64)
+	if err != nil {
+		return nil, errors.New("cannot find CHAIN_ID in ENV")
+	}
+	signedTx, err := opts.Signer(types.NewEIP155Signer(new(big.Int).SetInt64(chainId)), opts.From, rawTx)
 	if err != nil {
 		return nil, err
 	}
